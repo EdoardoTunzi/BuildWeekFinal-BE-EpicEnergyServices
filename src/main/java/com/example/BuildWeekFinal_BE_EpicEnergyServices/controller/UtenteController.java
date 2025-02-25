@@ -10,10 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
@@ -21,6 +18,13 @@ public class UtenteController {
 
     @Autowired
     UtenteService utenteService;
+
+
+    @GetMapping("/get")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public String prova() {
+        return "Prova";
+    }
 
     @PostMapping("/new")
     public ResponseEntity<String> signUp (@Validated @RequestBody RegistrazioneRequest nuovoUtente, BindingResult validazione) {
