@@ -1,0 +1,34 @@
+package com.example.BuildWeekFinal_BE_EpicEnergyServices.payload.request;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+
+import java.util.Set;
+
+@Data
+public class RegistrazioneRequest {
+
+    @NotBlank(message = "Username è un campo obbligatorio")
+    @Size(min = 3, max = 15)
+    private String username;
+
+    @NotBlank(message = "Password è un campo obbligatorio")
+    @Size(min = 3, max = 20)
+    private String password;
+
+    @NotBlank(message = "nome è un campo obbligatorio")
+    private String nome;
+
+    @NotBlank(message = "cognome è un campo obbligatorio")
+    private String cognome;
+
+    @NotBlank(message = "email è un campo obbligatorio")
+    @Email(message = "Il formato email inserito non è valido")
+    private String email;
+
+    private Set<String> ruoli;
+
+    private String avatar;
+}

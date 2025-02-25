@@ -2,11 +2,13 @@ package com.example.BuildWeekFinal_BE_EpicEnergyServices.security;
 
 
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.security.jwt.AuthEnrtyPoint;
-import com.example.BuildWeekFinal_BE_EpicEnergyServices.security.services.UserDetailsServiceImpl;
+import com.example.BuildWeekFinal_BE_EpicEnergyServices.security.jwt.FiltroAuthToken;
+import com.example.BuildWeekFinal_BE_EpicEnergyServices.security.services.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -25,7 +27,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class WebSecurityConfig {
 
     @Autowired
-    UserDetailsServiceImpl userDetailsService;
+    CustomUserDetailsService userDetailsService;
 
     @Autowired
     AuthEnrtyPoint gestoreNOAuthorization;
@@ -33,9 +35,10 @@ public class WebSecurityConfig {
 
     // Spring crea in automatico un oggetto Password Encoder
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
 
     @Bean
     AuthenticationManager gestoreAuth(HttpSecurity http) throws Exception {
@@ -44,18 +47,20 @@ public class WebSecurityConfig {
         return auth.build();
     }
 
+    @Bean
+    public FiltroAuthToken filtroToken() {
+        return new FiltroAuthToken();
+    }
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors(AbstractHttpConfigurer::disable).csrf(AbstractHttpConfigurer::disable);
-
         http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/user/new").permitAll()
                         .requestMatchers("/user/login").permitAll()
                         .requestMatchers("/user/**").hasRole("USER"))
                 .sessionManagement(custom -> custom.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(FiltroAuthToken, UsernamePasswordAuthenticationFilter.class);
-
+                .addFilterBefore(filtroToken(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
