@@ -22,7 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity(debug = true)
 @EnableMethodSecurity
 public class WebSecurityConfig {
 
@@ -65,10 +65,10 @@ public class WebSecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(gestoreNOAuthorization))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/user2/get").permitAll()
+                        .requestMatchers("/user/new").permitAll()
                         .requestMatchers("/user/login").permitAll()
-                        .requestMatchers("/user/**").hasRole("USER"))
-                .sessionManagement(custom -> custom.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        .requestMatchers("/user/**").hasRole("USER")
+                .anyRequest().authenticated())
                 .addFilterBefore(filtroToken, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

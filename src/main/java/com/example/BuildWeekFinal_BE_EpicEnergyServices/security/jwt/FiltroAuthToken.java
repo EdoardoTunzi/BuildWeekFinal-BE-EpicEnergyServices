@@ -41,38 +41,27 @@ public class FiltroAuthToken extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        try {
+            String jwt = analizzaJwt(request);
 
-        // otteniamo JWT dai cookie http
-        String jwt = analizzaJwt(request);
+            if (jwt != null && utils.validazioneJwtToken(jwt)) {
+                String username = utils.recuperoUsernameDaToken(jwt);
+                UserDetails dettagliUtente = userDetailsService.loadUserByUsername(username);
 
-        // se la richiesta presenta un JWT, la convalidiamo
-        if(jwt != null && utils.validazioneJwtToken(jwt)){
+                UsernamePasswordAuthenticationToken autenticazione =
+                        new UsernamePasswordAuthenticationToken(
+                                dettagliUtente,
+                                null,
+                                dettagliUtente.getAuthorities());
 
-            // recupero l'username dal token jwt
-            String username = utils.recuperoUsernameDaToken(jwt);
-
-            // recuperiamo UserDetails da Username -> creare un oggetto Authentication
-            UserDetails dettagliUtente = userDetailsService.loadUserByUsername(username);
-
-            // creazione di un oggetto UsernamePasswordAuthenticationToken
-             UsernamePasswordAuthenticationToken autenticazione =
-                     new UsernamePasswordAuthenticationToken(
-                             dettagliUtente,
-                             null,
-                             dettagliUtente.getAuthorities());
-
-             // settiamo nei dettagli dell'oggetto UsernamePasswordAuthenticationToken
-             autenticazione.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-            //impostare lo UserDetails corrente nel contesto (ambiente) di Security
-            SecurityContextHolder.getContext().setAuthentication(autenticazione);
-
-            filterChain.doFilter(request, response);
-
+                autenticazione.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(autenticazione);
+            }
+        } catch (Exception e) {
+            System.out.println("Errore durante l'autenticazione dell'utente: {}"+ e.getMessage());
         }
 
-
-
+        filterChain.doFilter(request, response); // Continua la catena di filtri
     }
 
 

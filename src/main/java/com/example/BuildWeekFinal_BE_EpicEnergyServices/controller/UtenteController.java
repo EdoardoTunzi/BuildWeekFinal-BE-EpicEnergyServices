@@ -20,11 +20,6 @@ public class UtenteController {
     UtenteService utenteService;
 
 
-    @GetMapping("/get")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public String prova() {
-        return "Prova";
-    }
 
     @PostMapping("/new")
     public ResponseEntity<String> signUp (@Validated @RequestBody RegistrazioneRequest nuovoUtente, BindingResult validazione) {
