@@ -65,9 +65,9 @@ public class WebSecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(gestoreNOAuthorization))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/user/new").permitAll()
-                        .requestMatchers("/user/login").permitAll()
-                        .requestMatchers("/user/**").hasRole("USER")
+                        .requestMatchers("/user/public/new").permitAll()
+                        .requestMatchers("/user/public/login").permitAll()
+                        .requestMatchers("/user/private/**").hasRole("USER")
                 .anyRequest().authenticated())
                 .addFilterBefore(filtroToken, UsernamePasswordAuthenticationFilter.class);
         return http.build();
