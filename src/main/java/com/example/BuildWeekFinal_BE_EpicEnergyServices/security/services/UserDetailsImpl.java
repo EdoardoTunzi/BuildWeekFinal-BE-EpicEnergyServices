@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UserDetailsImpl implements UserDetails {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;// Serve per la serializzazione dell'oggetto
 
     private Long id;
 
@@ -25,12 +25,15 @@ public class UserDetailsImpl implements UserDetails {
 
     private String email;
 
-    @JsonIgnore
+    @JsonIgnore// Evita che la password venga inclusa nelle risposte JSON
     private String password;
 
     private Collection<? extends GrantedAuthority> authorities;
 
+    // Metodo statico per creare un'istanza di UserDetailsImpl a partire da un Utente
     public static UserDetailsImpl build(Utente user) {
+        // Converte i ruoli dell'utente in una lista di GrantedAuthority, che Spring Security usa per gestire i permessi
+
         List<GrantedAuthority> authorities = user.getRuolo().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getNome().name()))
                 .collect(Collectors.toList());
@@ -42,6 +45,7 @@ public class UserDetailsImpl implements UserDetails {
                 user.getPassword(),
                 authorities);
     }
+    // Metodi richiesti dall'interfaccia UserDetails, che indicano se l'account è attivo o bloccato
 
     @Override
     public boolean isAccountNonExpired() {
