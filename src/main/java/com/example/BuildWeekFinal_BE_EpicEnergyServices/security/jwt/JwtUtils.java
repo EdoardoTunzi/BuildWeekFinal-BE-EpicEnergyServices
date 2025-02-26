@@ -2,14 +2,14 @@ package com.example.BuildWeekFinal_BE_EpicEnergyServices.security.jwt;
 
 
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.security.services.UserDetailsImpl;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
@@ -25,23 +25,45 @@ public class JwtUtils {
     private int jwtExpirations;
 
     // Creazione del JWT
-    public String creaJwtToken(Authentication autenticazione){
+    public String generateJwtToken(Authentication authentication) {
+        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
 
-        // Recupero il dettaglio principal (username)
-        UserDetailsImpl utentePrincipal = (UserDetailsImpl) autenticazione.getDetails();
-
-        // Creazione del JWT
         return Jwts.builder()
-                .setSubject(utentePrincipal.getUsername())
+                .setSubject((userPrincipal.getUsername()))
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(new Date().getTime()+jwtExpirations))
+                .setExpiration(new Date((new Date()).getTime() + jwtExpirations))
                 .signWith(recuperoChiave(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
+
     // Recupera l'username dal JWT
-    public String recuperoUsernameDaToken(String token){
-       return Jwts.parserBuilder().setSigningKey(recuperoChiave()).build().parseClaimsJwt(token).getBody().getSubject();
+    public String getUserNameFromJwtToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(recuperoChiave())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
+    public boolean validazioneJwtToken(String authToken) {
+        try {
+            Jwts.parserBuilder().setSigningKey(recuperoChiave()).build().parseClaimsJws(authToken);
+            return true;
+        } catch (SecurityException e) {
+            System.out.println("Invalid JWT signature:" + e.getMessage());
+        } catch (MalformedJwtException e) {
+            System.out.println("Invalid JWT token: " + e.getMessage());
+        } catch (ExpiredJwtException e) {
+            System.out.println("JWT token is expired:" + e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            System.out.println("JWT token is unsupported: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.out.println("JWT claims string is empty: " + e.getMessage());
+        }
+
+        return false;
     }
 
     // Recupera la scadenza dal JWT
@@ -50,10 +72,6 @@ public class JwtUtils {
     }
 
     // Validazione del TOKEN JWT
-    public boolean validazioneJwtToken(String token){
-        Jwts.parserBuilder().setSigningKey(recuperoChiave()).build().parse(token);
-        return true;
-    }
 
     // Recupero della chiave
     public Key recuperoChiave(){

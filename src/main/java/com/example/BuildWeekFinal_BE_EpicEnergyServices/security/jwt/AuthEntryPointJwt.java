@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class AuthEnrtyPoint implements AuthenticationEntryPoint {
+public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 
     // Implementiamo l'interfaccia che rileva eventuali errori di autenticazione
 

@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,27 +19,17 @@ import java.util.stream.Collectors;
 
 //implementiamo una interfaccia di Spring Security per i servizio di autenticazione
 @Service
-public class CustomUserDetailsService implements UserDetailsService {
+public class UserDetailsServiceImpl implements UserDetailsService {
 	
 	@Autowired
     private UtenteRepository userRepository;
-    
+
     @Override
+    @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        //autenticazione 
-    	Optional<Utente> user = userRepository.findByUsername(username);
+        Utente user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
 
-        // Viene atuenticato altrimenti viene sollevata un'eccezione
-        Utente userAutenticato = user.orElseThrow();
-
-        // Conversione Set<Ruolo> -> List<GrantedAuthority>
-        List<GrantedAuthority> ruoliUtente = userAutenticato.getRuolo().stream()
-                .map(ruolo -> new SimpleGrantedAuthority(ruolo.getNome().name())).collect(Collectors.toList());
-
-        UserDetails dettagliUtente =  User.builder().username(user.get().getUsername())
-                                                    .password(user.get().getPassword())
-                                                    .roles(ruoliUtente.toArray(new String[0]))
-                                                    .build();
-        return dettagliUtente;
+        return UserDetailsImpl.build(user);
     }
 }

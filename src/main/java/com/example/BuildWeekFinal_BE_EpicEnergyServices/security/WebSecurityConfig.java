@@ -1,19 +1,18 @@
 package com.example.BuildWeekFinal_BE_EpicEnergyServices.security;
 
 
-import com.example.BuildWeekFinal_BE_EpicEnergyServices.security.jwt.AuthEnrtyPoint;
-import com.example.BuildWeekFinal_BE_EpicEnergyServices.security.jwt.FiltroAuthToken;
-import com.example.BuildWeekFinal_BE_EpicEnergyServices.security.services.CustomUserDetailsService;
+import com.example.BuildWeekFinal_BE_EpicEnergyServices.security.jwt.AuthEntryPointJwt;
+import com.example.BuildWeekFinal_BE_EpicEnergyServices.security.jwt.AuthTokenFilter;
+import com.example.BuildWeekFinal_BE_EpicEnergyServices.security.services.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,14 +26,17 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class WebSecurityConfig {
 
     @Autowired
-    CustomUserDetailsService userDetailsService;
+    UserDetailsServiceImpl userDetailsService;
 
     @Autowired
-    AuthEnrtyPoint gestoreNOAuthorization;
-
-    @Autowired FiltroAuthToken filtroToken;
+    AuthEntryPointJwt unauthorizedHandler;
 
 
+
+    @Bean
+    public AuthTokenFilter authenticationJwtTokenFilter() {
+        return new AuthTokenFilter();
+    }
 
     // Spring crea in automatico un oggetto Password Encoder
     @Bean
@@ -52,24 +54,25 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    AuthenticationManager gestoreAuth(HttpSecurity http) throws Exception {
-        AuthenticationManagerBuilder auth = http.getSharedObject(AuthenticationManagerBuilder.class);
-        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
-        return auth.build();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
     }
 
-
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.cors(AbstractHttpConfigurer::disable).csrf(AbstractHttpConfigurer::disable)
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(gestoreNOAuthorization))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        http.authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/user/new").permitAll()
-                        .requestMatchers("/user/login").permitAll()
-                        .requestMatchers("/user/**").hasRole("USER")
-                .anyRequest().authenticated())
-                .addFilterBefore(filtroToken, UsernamePasswordAuthenticationFilter.class);
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.csrf(csrf -> csrf.disable())
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth ->
+                        auth.requestMatchers("/user/new").permitAll()
+                                .requestMatchers("/user/login").permitAll()
+                                .requestMatchers("/user/auth/**").hasRole("USER")
+                                .requestMatchers("/admin/**").hasRole("ADMIN")
+                                .anyRequest().authenticated()
+                );
+        http.authenticationProvider(authenticationProvider());
+        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 

@@ -17,39 +17,30 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UserDetailsImpl implements UserDetails {
 
-    // stiamo personalizzando i dettagli da inserire nel token JWT
+    private static final long serialVersionUID = 1L;
 
     private Long id;
+
     private String username;
+
     private String email;
+
     @JsonIgnore
     private String password;
-    private Collection<? extends GrantedAuthority> ruoli;
 
+    private Collection<? extends GrantedAuthority> authorities;
 
-    public static UserDetailsImpl costruisciDettagli(Utente user){
+    public static UserDetailsImpl build(Utente user) {
+        List<GrantedAuthority> authorities = user.getRuolo().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getNome().name()))
+                .collect(Collectors.toList());
 
-       // Conversione Set<Ruolo> -> List<GrantedAuthority>
-       List<GrantedAuthority> ruoliUtente =user.getRuolo().stream()
-               .map(ruolo -> new SimpleGrantedAuthority(ruolo.getNome().name())).collect(Collectors.toList());
-
-        return new UserDetailsImpl(user.getId(),user.getUsername(),user.getEmail(), user.getPassword(), ruoliUtente);
-    }
-
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return ruoli;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
+        return new UserDetailsImpl(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getPassword(),
+                authorities);
     }
 
     @Override
