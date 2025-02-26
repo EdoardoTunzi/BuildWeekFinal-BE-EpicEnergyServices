@@ -27,11 +27,15 @@ public class JwtUtils {
     // Metodo per generare un token JWT a partire da un'istanza di Authentication
     public String generateJwtToken(Authentication authentication) {
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
-
+        Claims claims = Jwts.claims();
+        claims.put("ruoli", userPrincipal.getAuthorities());
+        claims.put("username",userPrincipal.getUsername());
+        claims.put("exp", new Date((new Date()).getTime() + jwtExpirations));
         return Jwts.builder()
-                .setSubject((userPrincipal.getUsername()))// Imposta il nome utente come subject del token
+                /*.setSubject((userPrincipal.getUsername()))*/// Imposta il nome utente come subject del token
+                .setClaims(claims)
                 .setIssuedAt(new Date()) // Imposta la data di creazione del token
-                .setExpiration(new Date((new Date()).getTime() + jwtExpirations))// Imposta la data di scadenza del token
+                /*.setExpiration(new Date((new Date()).getTime() + jwtExpirations))*/// Imposta la data di scadenza del token
                 .signWith(recuperoChiave(), SignatureAlgorithm.HS256)// Firma il token con la chiave segreta
                 .compact();// Crea il token come stringa compatta
     }

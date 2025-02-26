@@ -63,6 +63,7 @@ public class UtenteService {
         utente.setNome(request.getNome());
         utente.setUsername(request.getUsername());
         utente.setCognome(request.getCognome());
+        utente.setAvatar("https://www.fotoarreda.com/quadro-su-tela/stampa/personalizzata/immagine/790443592_1-1.html");
         return utente;
     }
 }
