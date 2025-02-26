@@ -20,6 +20,7 @@ public class Fattura {
     @ManyToOne
     @JoinColumn(name = "cliente_id")
     private Cliente cliente;
+
     @Column(nullable = false)
     private LocalDate data;
     @Column(nullable = false)

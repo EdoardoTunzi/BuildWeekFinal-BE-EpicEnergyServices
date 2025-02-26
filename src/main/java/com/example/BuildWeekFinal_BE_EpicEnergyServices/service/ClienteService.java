@@ -6,6 +6,7 @@ import com.example.BuildWeekFinal_BE_EpicEnergyServices.exception.PecDuplicateEx
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.model.Cliente;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.payload.ClienteDTO;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.repository.ClienteRepository;
+import com.example.BuildWeekFinal_BE_EpicEnergyServices.repository.FatturaRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,7 @@ public class ClienteService {
 
 @Autowired
     ClienteRepository clienteRepository;
+
 
     //  crea Cliente
 
@@ -100,6 +102,7 @@ public class ClienteService {
         cliente.setEmail(email);
         return "Email aggiornata correttamente --> " + email;
     }
+
 
 
 

@@ -16,7 +16,7 @@ public class RagioneSociale {
     @Column(nullable = false)
     private String nomeAttivita;
 
-    @Column(nullable = false)
+
     @OneToMany
     @JoinColumn(name = "indirizzo_id")
     private List<Indirizzo> indirizzi;
