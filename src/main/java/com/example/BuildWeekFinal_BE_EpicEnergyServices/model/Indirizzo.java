@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/*
 @Entity
 @Table(name = "indirizzi")
 @Data
@@ -34,3 +35,4 @@ public class Indirizzo {
     @Column(nullable = false)
     private String comune;
 }
+*/

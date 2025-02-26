@@ -72,6 +72,7 @@ public class ClienteService {
 
         if (clienteTrovato.isPresent()) {
             Cliente cliente = clienteTrovato.get();
+            //risolvi
             cliente.setRagioneSociale(clienteDto.getRagioneSociale());
             cliente.setPartitaIVA(clienteDto.getPartitaIVA());
             cliente.setEmail(clienteDto.getEmail());
@@ -102,6 +103,15 @@ public class ClienteService {
         cliente.setEmail(email);
         return "Email aggiornata correttamente --> " + email;
     }
+
+    public String deleteCliente(long idCliente) {
+        Cliente clienteTrovato = clienteRepository.findById(idCliente).orElseThrow(() -> new RuntimeException("Cliente non trovato"));
+
+        clienteRepository.deleteById(clienteTrovato.getId());
+        return "Cliente eliminato con successo";
+
+    }
+
 
 
 

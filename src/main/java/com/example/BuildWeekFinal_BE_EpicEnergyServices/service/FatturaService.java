@@ -1,7 +1,12 @@
 package com.example.BuildWeekFinal_BE_EpicEnergyServices.service;
 
+import com.example.BuildWeekFinal_BE_EpicEnergyServices.exception.EmailDuplicateException;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.exception.NotFoundException;
+import com.example.BuildWeekFinal_BE_EpicEnergyServices.exception.PecDuplicateException;
+import com.example.BuildWeekFinal_BE_EpicEnergyServices.model.Cliente;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.model.Fattura;
+import com.example.BuildWeekFinal_BE_EpicEnergyServices.model.StatoFattura;
+import com.example.BuildWeekFinal_BE_EpicEnergyServices.payload.ClienteDTO;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.payload.FatturaDTO;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.repository.ClienteRepository;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.repository.FatturaRepository;
@@ -12,6 +17,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +31,19 @@ public class FatturaService {
 
     @Autowired
     ClienteRepository clienteRepository;
+
+    //crea metodo nuovafattura
+    public String creaFattura(FatturaDTO fatturaDTO, long idCliente)  {
+
+        Cliente clienteTrovato = clienteRepository.findById(idCliente).orElseThrow(()-> new RuntimeException("Cliente non trovato"));
+
+        Fattura fattura = dto_entity(fatturaDTO);
+        fattura.setCliente(clienteTrovato);
+
+        long id_numeroFattura = fatturaRepository.save(fattura).getNumeroFattura_id();
+
+        return "Fattura inserita nel DB con numero: " + id_numeroFattura;
+    }
 
     // Trova tutte le Fatture
     public Page<FatturaDTO> trovaTutteLeFatture(Pageable page){
@@ -51,22 +70,25 @@ public class FatturaService {
         }
     }
 
-    // Modifica Fatture
-    public void modificaFattura(FatturaDTO fatturaDTO, long id) {
+    // modifica stato fattura patch
+    public void modificaFattura(StatoFattura stato, long idFattura) {
 
-        Optional<Fattura> fatturaTrovata = fatturaRepository.findById(id);
+        Optional<Fattura> fatturaTrovata = fatturaRepository.findById(idFattura);
 
         if (fatturaTrovata.isPresent()) {
             Fattura fattura = fatturaTrovata.get();
-            fattura.setCliente(fatturaDTO.getCliente());
-            fattura.setImporto(fatturaDTO.getImporto());
-            fattura.setData(fatturaDTO.getData());
-            fattura.setStato(fatturaDTO.getStato());
-
+            fattura.setStato(stato);
 
         } else {
             throw new NotFoundException("Errore nella modifica della fattura inserita. Fattura non trovata!");
         }
+    }
+
+    public String deleteFattura(long idfattura) {
+        Fattura fatturaTrovato = fatturaRepository.findById(idfattura).orElseThrow(()->new RuntimeException("Fattura non trovato"));
+
+        clienteRepository.deleteById(fatturaTrovato.getNumeroFattura_id());
+        return "Fattura eliminata con successo";
 
     }
 
@@ -75,10 +97,9 @@ public class FatturaService {
 
     public Fattura dto_entity(FatturaDTO fatturaDTO) {
         Fattura fattura = new Fattura();
-        fattura.setCliente(fatturaDTO.getCliente());
         fattura.setImporto(fatturaDTO.getImporto());
-        fattura.setData(fatturaDTO.getData());
-        fattura.setStato(fatturaDTO.getStato());
+        fattura.setData(LocalDate.now());
+        fattura.setStato(StatoFattura.EMESSA);
 
         return fattura;
     }
