@@ -19,7 +19,7 @@ public class RagioneSociale {
 
     @OneToMany
     @JoinColumn(name = "indirizzo_id")
-    private List<String> indirizzi;
+    private List<Indirizzo> indirizzi;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

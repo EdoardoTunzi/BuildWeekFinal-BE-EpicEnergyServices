@@ -66,16 +66,18 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/user/new").permitAll() // Permette la registrazione senza autenticazione
                                 .requestMatchers("/user/login").permitAll() // Permette il login senza autenticazione
+
                                 .requestMatchers("/user/auth/**").hasRole("USER")  // Accessibile solo agli utenti con ruolo USER
                                 .requestMatchers("/admin/**").hasRole("ADMIN") // Accessibile solo agli ADMIN
                         // Tutte le altre richieste richiedono autenticazione
-                                .anyRequest().authenticated()
+                                .anyRequest()
+
+                                .authenticated()
                 );
         //Configura il provider di autenticazione e aggiunge il filtro JWT
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
-
-        return http.build();
+return http.build();
     }
 
 }

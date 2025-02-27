@@ -4,9 +4,14 @@ import com.example.BuildWeekFinal_BE_EpicEnergyServices.exception.EmailDuplicate
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.exception.NotFoundException;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.exception.PecDuplicateException;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.model.Cliente;
+import com.example.BuildWeekFinal_BE_EpicEnergyServices.model.Indirizzo;
+import com.example.BuildWeekFinal_BE_EpicEnergyServices.model.RagioneSociale;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.payload.ClienteDTO;
+import com.example.BuildWeekFinal_BE_EpicEnergyServices.payload.IndirizzoDTO;
+import com.example.BuildWeekFinal_BE_EpicEnergyServices.payload.RagioneSocialeDTO;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.repository.ClienteRepository;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.repository.FatturaRepository;
+import com.example.BuildWeekFinal_BE_EpicEnergyServices.repository.IndirizzoRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,14 +30,35 @@ public class ClienteService {
 @Autowired
     ClienteRepository clienteRepository;
 
+@Autowired
+    IndirizzoRepository indirizzoRepository;
+
+@Autowired IndirizzoService indirizzoService;
+@Autowired RagioneSocialeService ragioneSocialeService;
+
 
     //  crea Cliente
 
     public String creaCliente(ClienteDTO clienteDTO) throws PecDuplicateException, EmailDuplicateException {
 
         controlloDuplicati(clienteDTO.getPec(),clienteDTO.getEmail());
+        RagioneSocialeDTO ragioneSocialeDTO =  clienteDTO.getRagioneSociale();
+        List<Indirizzo> indirizzi = new ArrayList<>();
+        List<IndirizzoDTO> indirizziDTO = ragioneSocialeDTO.getIndirizzi();
+        indirizziDTO.forEach(ele-> {
+
+            indirizzi.add(indirizzoService.saveIndirizzo(ele));
+        });
+        RagioneSociale ragioneSociale = ragioneSocialeService.saveRagioneSociale(ragioneSocialeDTO, indirizzi);
+
+
+
+
+
+
 
         Cliente cliente = dto_entity(clienteDTO);
+        cliente.setRagioneSociale(ragioneSociale);
         long id = clienteRepository.save(cliente).getId();
 
 
@@ -73,7 +99,7 @@ public class ClienteService {
         if (clienteTrovato.isPresent()) {
             Cliente cliente = clienteTrovato.get();
             //risolvi
-            cliente.setRagioneSociale(clienteDto.getRagioneSociale());
+//            cliente.setRagioneSociale(clienteDto.getRagioneSociale());
             cliente.setPartitaIVA(clienteDto.getPartitaIVA());
             cliente.setEmail(clienteDto.getEmail());
             cliente.setDataInserimento(clienteDto.getDataInserimento());
@@ -134,7 +160,7 @@ public class ClienteService {
 
     public Cliente dto_entity(ClienteDTO clienteDTO) {
         Cliente cliente = new Cliente();
-        cliente.setRagioneSociale(clienteDTO.getRagioneSociale());
+//        cliente.setRagioneSociale(clienteDTO.getRagioneSociale());
         cliente.setPartitaIVA(clienteDTO.getPartitaIVA());
         cliente.setEmail(clienteDTO.getEmail());
         cliente.setDataInserimento(clienteDTO.getDataInserimento());
@@ -154,7 +180,7 @@ public class ClienteService {
     // travaso ENTITY ---> DTO
     public ClienteDTO entity_dto(Cliente cliente) {
         ClienteDTO clienteDTO = new ClienteDTO();
-        clienteDTO.setRagioneSociale(cliente.getRagioneSociale());
+//        clienteDTO.setRagioneSocialeDTO(cliente.getRagioneSociale());
         clienteDTO.setPartitaIVA(cliente.getPartitaIVA());
         clienteDTO.setEmail(cliente.getEmail());
         clienteDTO.setDataInserimento(cliente.getDataInserimento());

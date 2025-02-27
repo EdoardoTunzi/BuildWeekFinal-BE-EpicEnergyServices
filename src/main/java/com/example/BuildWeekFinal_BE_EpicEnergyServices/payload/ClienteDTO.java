@@ -1,5 +1,6 @@
 package com.example.BuildWeekFinal_BE_EpicEnergyServices.payload;
 
+import com.example.BuildWeekFinal_BE_EpicEnergyServices.model.Fattura;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.model.RagioneSociale;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
@@ -9,16 +10,17 @@ import lombok.Data;
 import org.hibernate.validator.constraints.URL;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 public class ClienteDTO {
-    @NotBlank(message = "Il campo è obbligatorio")
-    private RagioneSociale ragioneSociale;
+    @NotNull(message = "Il campo ragione sociale è obbligatorio")
+    private RagioneSocialeDTO ragioneSociale;
 
-    @NotBlank(message = "Il campo è obbligatorio")
+    @NotBlank(message = "Il campo partita iva è obbligatorio")
     private String partitaIVA;
 
-    @NotBlank(message = "Il campo è obbligatorio")
+    @NotBlank(message = "Il campo email è obbligatorio")
     @Email
     private String email;
 
@@ -28,7 +30,7 @@ public class ClienteDTO {
     private LocalDate dataUltimoContatto;
     private double fatturatoAnnuale;
 
-    @NotBlank(message = "Il campo è obbligatorio")
+    @NotBlank(message = "Il campo pec è obbligatorio")
     @Email
     private String pec;
 
@@ -43,4 +45,6 @@ public class ClienteDTO {
     private String telefonoContatto;
     @URL(protocol = "https")
     private String logoAziendale;
+
+    private List<Fattura> listaFatture;
 }
