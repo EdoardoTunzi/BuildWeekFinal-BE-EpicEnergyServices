@@ -27,63 +27,57 @@ import java.util.Optional;
 @Transactional
 public class ClienteService {
 
-@Autowired
+    @Autowired
     ClienteRepository clienteRepository;
 
-@Autowired
+    @Autowired
     IndirizzoRepository indirizzoRepository;
 
-@Autowired IndirizzoService indirizzoService;
-@Autowired RagioneSocialeService ragioneSocialeService;
+    @Autowired
+    IndirizzoService indirizzoService;
+    @Autowired
+    RagioneSocialeService ragioneSocialeService;
 
 
     //  crea Cliente
-
     public String creaCliente(ClienteDTO clienteDTO) throws PecDuplicateException, EmailDuplicateException {
-
-        controlloDuplicati(clienteDTO.getPec(),clienteDTO.getEmail());
-        RagioneSocialeDTO ragioneSocialeDTO =  clienteDTO.getRagioneSociale();
+        controlloDuplicati(clienteDTO.getPec(), clienteDTO.getEmail());
+        //recuperiamo ragioneDTO dall oggetto cliente che passiamo come body
+        RagioneSocialeDTO ragioneSocialeDTO = clienteDTO.getRagioneSociale();
         List<Indirizzo> indirizzi = new ArrayList<>();
+        //recuperiamo la lista di indirizzidto dall oggetto ragione socialedto
         List<IndirizzoDTO> indirizziDTO = ragioneSocialeDTO.getIndirizzi();
-        indirizziDTO.forEach(ele-> {
-
+        //per ogni elemento nella lista facciamo il save nel db e l oggetto restituito dal metodo(indirizzo) lo aggiungiamo alla lista
+        indirizziDTO.forEach(ele -> {
             indirizzi.add(indirizzoService.saveIndirizzo(ele));
         });
+        //creiamo l oggetto ragione sociale con il metodo nel service, passiamo 2 params per settare anche la lista
         RagioneSociale ragioneSociale = ragioneSocialeService.saveRagioneSociale(ragioneSocialeDTO, indirizzi);
-
-
-
-
-
-
-
+        //travaso e creazione di oggetto cliente
         Cliente cliente = dto_entity(clienteDTO);
+        //settaggio della ragione sociale in cliente
         cliente.setRagioneSociale(ragioneSociale);
+        //salvataggio del cliente
         long id = clienteRepository.save(cliente).getId();
-
-
         return "Cliente inserito con ID: " + id;
     }
 
     // Trova Cliente tramite ID
-    public ClienteDTO trovaCliente(long id){
+    public ClienteDTO trovaCliente(long id) {
         Optional<Cliente> clienteTrovato = clienteRepository.findById(id);
-        if(clienteTrovato.isPresent()){
+        if (clienteTrovato.isPresent()) {
             return entity_dto(clienteTrovato.get());
-        }else{
+        } else {
             throw new RuntimeException("Cliente non trovato");
         }
-
     }
 
     // Trova tutti i clienti
-    public Page<ClienteDTO> trovaTuttiClienti(Pageable page){
-
+    public Page<ClienteDTO> trovaTuttiClienti(Pageable page) {
         Page<Cliente> listaClienti = clienteRepository.findAll(page);
-
         List<ClienteDTO> listaClientiDTO = new ArrayList<>();
         // verifico e ciclo l elemento di destra tramite l appartenenza alla classe di sinistra
-        for(Cliente cliente : listaClienti.getContent()){
+        for (Cliente cliente : listaClienti.getContent()) {
             // travaso e aggiungo la lista di utenti
             ClienteDTO clienteDTO = entity_dto(cliente);
             listaClientiDTO.add(clienteDTO);
@@ -93,9 +87,7 @@ public class ClienteService {
 
     // Modifica Cliente
     public void modificaCliente(ClienteDTO clienteDto, long id) {
-
         Optional<Cliente> clienteTrovato = clienteRepository.findById(id);
-
         if (clienteTrovato.isPresent()) {
             Cliente cliente = clienteTrovato.get();
             //risolvi
@@ -112,8 +104,6 @@ public class ClienteService {
             cliente.setCognomeContatto(clienteDto.getCognomeContatto());
             cliente.setTelefonoContatto(clienteDto.getTelefonoContatto());
             cliente.setLogoAziendale(clienteDto.getLogoAziendale());
-
-
         } else {
             throw new NotFoundException("Errore nella modifica del cliente inserito. Utente non trovato!");
         }
@@ -121,7 +111,7 @@ public class ClienteService {
 
     // Aggiorna parametro Cliente
 
-    public String aggiornaEmailCliente(String email ,long id) {
+    public String aggiornaEmailCliente(String email, long id) {
         Optional<Cliente> clienteTrovato = clienteRepository.findById(id);
         // l'oggetto è agganciato al DB
         Cliente cliente = clienteTrovato.orElseThrow();
@@ -132,24 +122,20 @@ public class ClienteService {
 
     public String deleteCliente(long idCliente) {
         Cliente clienteTrovato = clienteRepository.findById(idCliente).orElseThrow(() -> new RuntimeException("Cliente non trovato"));
-
         clienteRepository.deleteById(clienteTrovato.getId());
         return "Cliente eliminato con successo";
 
     }
 
 
-
-
-
     // controllo duplicato Username e Password
     public void controlloDuplicati(String pec, String email) throws PecDuplicateException, EmailDuplicateException {
 
-        if(clienteRepository.existsByPec(pec)){
+        if (clienteRepository.existsByPec(pec)) {
             throw new PecDuplicateException("Pec gia esistente nel sistema");
         }
 
-        if(clienteRepository.existsByEmail(email)){
+        if (clienteRepository.existsByEmail(email)) {
             throw new EmailDuplicateException("Email gia presente nel sistema");
         }
 

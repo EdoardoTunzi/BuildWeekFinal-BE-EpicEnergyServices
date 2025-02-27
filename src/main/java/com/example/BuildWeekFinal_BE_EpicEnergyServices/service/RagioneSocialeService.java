@@ -22,10 +22,13 @@ public class RagioneSocialeService {
     RagioneSocialeRepository ragioneSocialeRepository;
 
 
-
+    //salvataggio in db
     public RagioneSociale saveRagioneSociale(RagioneSocialeDTO ragioneSocialeDto, List<Indirizzo> lista){
+        //travaso e creazione dell oggetto ragione sociale
         RagioneSociale ragioneSociale = dto_entity(ragioneSocialeDto);
+        //set della lista di indirizzi
         ragioneSociale.setIndirizzi(lista);
+        //salvataggio
         ragioneSocialeRepository.save(ragioneSociale);
         return ragioneSociale;
 
