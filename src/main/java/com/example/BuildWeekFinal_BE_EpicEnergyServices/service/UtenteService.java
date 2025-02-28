@@ -4,8 +4,14 @@ import com.example.BuildWeekFinal_BE_EpicEnergyServices.exception.EmailDuplicate
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.exception.UsernameDuplicateException;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.model.Utente;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.payload.request.RegistrazioneRequest;
+import com.example.BuildWeekFinal_BE_EpicEnergyServices.payload.response.LoginResponse;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.repository.UtenteRepository;
+import com.example.BuildWeekFinal_BE_EpicEnergyServices.security.services.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,8 +26,11 @@ public class UtenteService {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    @Autowired
+    AuthenticationManager authenticationManager;
 
-
+    @Autowired
+    JwtUtil jwtUtil;
 
     public String newUtente(RegistrazioneRequest registrazione) {
         String passwordCodificata = passwordEncoder.encode(registrazione.getPassword());
@@ -38,6 +47,39 @@ public class UtenteService {
         }
         Long id = utenteRepo.save(user).getId();
         return "Nuovo utente " + user.getUsername() + "con id " + id + " è stato inserito correttamente";
+    }
+
+    public LoginResponse login(String username, String password){
+
+        // 1. AUTENTICAZIONE DELL'UTENTE IN FASE DI LOGIN
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+
+        // 2. INSERIMENTO DELL'AUTENTICAZIONE UTENTE NEL CONTESTO DELLA SICUREZZA
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // 3. RECUPERO RUOLI --> String
+        String ruolo=null;
+        for(Object role :authentication.getAuthorities()){
+            ruolo=role.toString();
+            break;
+        }
+
+        // 4. GENERO L'UTENTE
+        Utente user = new Utente();
+        user.setUsername(username);
+        user.setRuolo(ruolo);
+
+        // 5. GENERO IL TOKEN
+        String token = jwtUtil.creaToken(user);
+
+        // 6. CREO L'OGGETTO DI RISPOSTA AL CLIENT
+        return new LoginResponse(username, token);
+    }
+
+    public String modificaAvatar(long idUtente, String urlImg) {
+        Utente utente = utenteRepo.findById(idUtente).orElseThrow();
+        utente.setAvatar(urlImg);
+        return "Immagine dell'avatar modificata";
     }
 
     public void checkDuplicateKey(String username, String email) throws UsernameDuplicateException, EmailDuplicateException {
