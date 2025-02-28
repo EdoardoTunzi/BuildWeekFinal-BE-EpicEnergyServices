@@ -121,5 +121,15 @@ public class UtenteController {
             throw new RuntimeException("Errore nel caricamento dell'immagine: " + e);
         }
     }
+
+    @DeleteMapping("/admin/deleteCliente/{idCliente}")
+    public ResponseEntity<?> deleteCliente(@PathVariable long idCliente) {
+        try {
+            clienteService.deleteCliente(idCliente);
+            return new ResponseEntity<>("Cliente eliminato con successo", HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>("Errore durante eliminazione. Cliente non trovato" + e, HttpStatus.BAD_REQUEST);
+        }
+    }
 }
 

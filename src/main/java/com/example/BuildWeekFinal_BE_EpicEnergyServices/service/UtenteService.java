@@ -38,9 +38,9 @@ public class UtenteService {
         Utente user = registrazioneRequest_Utente(registrazione);
         user.setPassword(passwordCodificata);
         // controllo assegnazione role
-        if (registrazione.getRuolo() == null || registrazione.getRuolo() == "USER") {
+        if (registrazione.getRuolo() == null || registrazione.getRuolo().equals("USER")) {
             user.setRuolo("USER");
-        } else if (registrazione.getRuolo()=="ADMIN") {
+        } else if (registrazione.getRuolo().equals("ADMIN")) {
             user.setRuolo("ADMIN");
         } else {
             throw new RuntimeException("Errore: Il Valore inserito come ruolo non è valido!");
