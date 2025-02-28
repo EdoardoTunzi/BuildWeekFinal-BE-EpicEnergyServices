@@ -2,11 +2,8 @@ package com.example.BuildWeekFinal_BE_EpicEnergyServices.service;
 
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.exception.EmailDuplicateException;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.exception.UsernameDuplicateException;
-import com.example.BuildWeekFinal_BE_EpicEnergyServices.model.ERuolo;
-import com.example.BuildWeekFinal_BE_EpicEnergyServices.model.Ruolo;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.model.Utente;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.payload.request.RegistrazioneRequest;
-import com.example.BuildWeekFinal_BE_EpicEnergyServices.repository.RuoloRepository;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.repository.UtenteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,8 +20,7 @@ public class UtenteService {
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    @Autowired
-    RuoloRepository ruoloRepo;
+
 
 
     public String newUtente(RegistrazioneRequest registrazione) {
@@ -33,12 +29,10 @@ public class UtenteService {
         Utente user = registrazioneRequest_Utente(registrazione);
         user.setPassword(passwordCodificata);
         // controllo assegnazione role
-        if (registrazione.getRuoli() == null || registrazione.getRuoli().contains(ERuolo.USER_ROLE.name())) {
-            Ruolo defaultRole = ruoloRepo.findByNome(ERuolo.USER_ROLE).orElseThrow(() -> new RuntimeException("Errore: Ruolo non trovato."));
-            user.getRuolo().add(defaultRole);
-        } else if (registrazione.getRuoli().contains(ERuolo.ADMIN_ROLE.name())) {
-            Ruolo adminRole = ruoloRepo.findByNome(ERuolo.ADMIN_ROLE).orElseThrow(() -> new RuntimeException("Errore: Ruolo non trovato."));
-            user.getRuolo().add(adminRole);
+        if (registrazione.getRuolo() == null || registrazione.getRuolo() == "USER") {
+            user.setRuolo("USER");
+        } else if (registrazione.getRuolo()=="ADMIN") {
+            user.setRuolo("ADMIN");
         } else {
             throw new RuntimeException("Errore: Il Valore inserito come ruolo non è valido!");
         }

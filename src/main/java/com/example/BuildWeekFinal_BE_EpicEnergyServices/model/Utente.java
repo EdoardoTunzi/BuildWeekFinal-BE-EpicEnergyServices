@@ -31,11 +31,8 @@ public class Utente {
     @Column(nullable = false)
     private String cognome;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable( name="utente_ruolo",
-            joinColumns = @JoinColumn(name="utente_id"),
-            inverseJoinColumns =  @JoinColumn(name="ruolo_id"))
-    private Set<Ruolo> ruolo= new HashSet<>();
+    @Column(nullable = false)
+    private String ruolo;
 
     private String avatar;
 }

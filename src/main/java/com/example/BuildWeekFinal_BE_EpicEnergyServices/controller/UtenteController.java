@@ -6,7 +6,6 @@ import com.example.BuildWeekFinal_BE_EpicEnergyServices.payload.ClienteDTO;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.payload.request.LoginRequest;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.payload.request.RegistrazioneRequest;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.payload.response.JwtResponse;
-import com.example.BuildWeekFinal_BE_EpicEnergyServices.repository.RuoloRepository;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.repository.UtenteRepository;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.security.jwt.JwtUtils;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.security.services.UserDetailsImpl;
@@ -43,8 +42,7 @@ public class UtenteController {
     @Autowired
     private UtenteRepository userRepository;
 
-    @Autowired
-    private RuoloRepository roleRepository;
+   
 
     @Autowired
     private PasswordEncoder encoder;

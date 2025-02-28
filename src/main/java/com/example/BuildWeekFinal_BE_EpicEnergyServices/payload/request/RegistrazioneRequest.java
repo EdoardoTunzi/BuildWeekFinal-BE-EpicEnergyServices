@@ -28,7 +28,7 @@ public class RegistrazioneRequest {
     @Email(message = "Il formato email inserito non è valido")
     private String email;
 
-    private Set<String> ruoli;
+    private String ruolo;
 
     private String avatar;
 }
