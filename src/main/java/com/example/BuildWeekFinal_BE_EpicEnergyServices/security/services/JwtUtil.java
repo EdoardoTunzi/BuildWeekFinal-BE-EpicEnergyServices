@@ -3,6 +3,7 @@ package com.example.BuildWeekFinal_BE_EpicEnergyServices.security.services;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.exception.CreateTokenException;
 import com.example.BuildWeekFinal_BE_EpicEnergyServices.model.Utente;
 import io.jsonwebtoken.*;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -14,26 +15,28 @@ import java.util.concurrent.TimeUnit;
 public class JwtUtil {
 
     // possono essere inserite anche nel properties
-
-    private String JWTSECRET ="5d23f5d1b52b0672761877f7cad5b26365d6c8df4b89a1a7c12aa2c69df0ace286162b249d1fb8478e694ef1bc8580a3701fcc887207522ccb65e03414aa8e5b18b6099d21e49097c0dd461bab67f0b53ff0cbd9a2c0897bdd5e22e8abce84ee0f76e41b53227e8f94f2441e8e02161a5128701c3f8fa84ec6e9169ce0b2e7399e455dbc7366854a2d895f2eecb78b90066c619732fd35218e96cdeb8b18cf8f1f5da85a086c71789ee27319f58028711d151dbda18b8079c4f99663ee2087bb7d78c2d7f8aa345d6f52685cbb8729f66b4347137883e477e0252bbc0742facb926475b256b3860c680610ce34b40094a442f730521755ada2567aed626fd063";
+    @Value("${jwt.secret}")
+    private String JWTSECRET;
     private long scadenza = 15;
-    private final String TOKEN_HEADER ="Authorization";
-    private final String TOKEN_PREFIX ="Bearer ";
+    private final String TOKEN_HEADER = "Authorization";
+    private final String TOKEN_PREFIX = "Bearer ";
 
     // Oggetto che occorre per la validazione
-    private final JwtParser JWTPARSER;
+    private JwtParser JWTPARSER;
 
-    public JwtUtil(){
+    @PostConstruct
+    public void init() {
         JWTPARSER = Jwts.parser().setSigningKey(JWTSECRET);
     }
 
     /**
      * Metodo di creazione Token.
      * Recupera le info da Utente e le inserisce nel Token finale in formato String
+     *
      * @param utente
      * @return il token in formato String
      */
-    public String creaToken(Utente utente){
+    public String creaToken(Utente utente) {
         // Impostazione del Claims (Payload)
         Claims claims = Jwts.claims().setSubject(utente.getUsername());
         claims.put("roles", utente.getRuolo());
@@ -54,6 +57,7 @@ public class JwtUtil {
 
     /**
      * Estrazione del TOKEN in arrivo all'interno della request
+     *
      * @param request
      * @return
      */
@@ -63,7 +67,7 @@ public class JwtUtil {
         String bearerToken = request.getHeader(TOKEN_HEADER);
 
         // Il token è presente? Inizia con "Bearer " ?
-        if(bearerToken!=null && bearerToken.startsWith(TOKEN_PREFIX)){
+        if (bearerToken != null && bearerToken.startsWith(TOKEN_PREFIX)) {
             // Ritorna il token senza prefisso
             return bearerToken.substring(TOKEN_PREFIX.length());
         }
@@ -74,6 +78,7 @@ public class JwtUtil {
     /**
      * Metodo di validazione del Token.
      * Recupera il Token e ne estra solo il payload.
+     *
      * @param request
      * @return
      * @throws CreateTokenException
@@ -82,10 +87,10 @@ public class JwtUtil {
         try {
             String token = recuperoToken(request);
             return JWTPARSER.parseClaimsJws(token).getBody();
-        }catch(ExpiredJwtException ex){
+        } catch (ExpiredJwtException ex) {
             request.setAttribute("expired", ex.getMessage());
             throw ex;
-        }catch(Exception ex){
+        } catch (Exception ex) {
             request.setAttribute("token invalido", ex.getMessage());
             throw ex;
         }
@@ -93,13 +98,14 @@ public class JwtUtil {
 
     /**
      * Metodo che controlla la scadenza del Token
+     *
      * @param claims
      * @return
      */
-    public boolean checkExpiration(Claims claims){
-        try{
+    public boolean checkExpiration(Claims claims) {
+        try {
             return claims.getExpiration().after(new Date());
-        }catch(Exception ex){
+        } catch (Exception ex) {
             throw ex;
         }
 
